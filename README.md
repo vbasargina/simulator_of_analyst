@@ -6,3 +6,5 @@
 \
 В таблице **message_actions** содержится информация по активности пользователей в мессенджере.
 ![image](https://github.com/vbasargina/simulator_of_analyst/assets/147047190/5bf25be1-f0f3-4a9b-90c7-40877328926d)
+\
+Описание данных в таблице преведено в файле https://github.com/vbasargina/simulator_of_analyst/blob/main/data_description.txt
