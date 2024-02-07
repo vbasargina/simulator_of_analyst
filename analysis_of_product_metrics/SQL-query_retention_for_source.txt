@@ -1,0 +1,29 @@
+-- retention для пользователей, которые пришли через органический трафик и рекламный
+
+SELECT start_day,
+          day,
+          source,
+          count(user_id) AS users,
+          MAX(count(user_id)) OVER(PARTITION BY source, start_day
+                                   ORDER BY day) as max_users,
+          CONCAT(dateName('month', start_day), ' ', dateName('year', start_day)) as year_month,
+          toDayOfMonth(start_day) as day_of_month
+   FROM
+     (SELECT *
+      FROM
+        (SELECT user_id,
+                source,
+                min(toDate(time)) AS start_day
+         FROM simulator_20231220.feed_actions
+         GROUP BY user_id,
+                  source) t1
+      JOIN
+        (SELECT DISTINCT user_id,
+                         toDate(time) AS day
+         FROM simulator_20231220.feed_actions) t2 USING user_id
+      WHERE start_day<= today()-10)
+   GROUP BY start_day,
+            day,
+            source,
+            year_month,
+            day_of_month

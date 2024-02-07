@@ -1,0 +1,33 @@
+-- Города пользователей, которые не смогли зайти в приложение 10.12   
+
+SELECT t1.city,
+          users_before,
+          users_10_12,
+          users_after
+   FROM
+     (SELECT a.city,
+             users_before,
+             users_after
+      FROM
+        (SELECT city,
+                COUNT(DISTINCT user_id) as users_before
+         FROM simulator_20231220.feed_actions
+         WHERE country='Russia'
+           and toDate(time) = '2023-12-09'
+         GROUP BY city) a
+      JOIN
+        (SELECT city,
+                COUNT(DISTINCT user_id) as users_after
+         FROM simulator_20231220.feed_actions
+         WHERE country='Russia'
+           and toDate(time) = '2023-12-11'
+         GROUP BY city) b USING (city)) t1
+   LEFT JOIN
+     (SELECT city,
+             COUNT(DISTINCT user_id) as users_10_12
+      FROM simulator_20231220.feed_actions
+      WHERE country='Russia'
+        and toDate(time) = '2023-12-10'
+      GROUP BY city) t2 ON t1.city=t2.city
+   ORDER BY users_10_12 ASC, users_before DESC
+   LIMIT 4

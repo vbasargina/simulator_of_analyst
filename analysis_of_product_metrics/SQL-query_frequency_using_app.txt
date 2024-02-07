@@ -1,0 +1,29 @@
+-- Определение частоты использования приложения по неделям пользователями пришедшими 1.12.2023 через платный трафик
+
+SELECT user_id,
+          CONCAT(toString(dateadd(toDate('2023-12-01'), INTERVAL custom_week_number - 1 WEEK)), ' - ', toString(dateadd(toDate('2023-12-01'), INTERVAL (custom_week_number*7)- 1 day))) as custom_week_number,
+          CASE
+              WHEN count(day) = 1 THEN '1 день'
+              WHEN count(day) = 2 THEN '2 дня'
+              WHEN count(day) = 3 THEN '3 дня'
+              ELSE '4 дня и больше'
+          END as num_day
+   FROM
+     (SELECT *
+      FROM
+        (SELECT user_id,
+                source,
+                min(toDate(time)) AS start_day
+         FROM simulator_20231220.feed_actions
+         GROUP BY user_id,
+                  source) t1
+      JOIN
+        (SELECT DISTINCT user_id,
+                         toDate(time) AS day,
+                         (DATEDIFF(day, toDate('2023-12-01'), toDate(time)) DIV 7) + 1 as custom_week_number
+         FROM simulator_20231220.feed_actions) t2 USING user_id
+      WHERE start_day = '2023-12-01'
+        and day < '2023-12-29')
+   WHERE source = 'ads'
+   GROUP BY user_id,
+            custom_week_number
