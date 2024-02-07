@@ -1,0 +1,36 @@
+-- Запрос для расчета метрики DAU/MAU
+
+SELECT toStartOfDay(toDateTime(time)) AS __timestamp,
+       SUM(dau)/SUM(mau) AS "DAU/MAU"
+FROM
+  (select d.time,
+          d.gender,
+          d.os,
+          d.dau,
+          m.mau,
+          d.dau * 1.0 / m.mau AS dau_mau
+   from
+     (select DATE(time) as time,
+             gender,
+             os,
+             count(distinct user_id) as dau
+      from simulator_20231220.feed_actions
+      where DATE(time) >= '2023-11-01'
+        and DATE(time) < '2023-12-01'
+      group by time,
+               gender,
+               os) d
+   left join
+     (select gender,
+             os,
+             count(distinct user_id) as mau
+      from simulator_20231220.feed_actions
+      where DATE(time) >= '2023-11-01'
+        and DATE(time) < '2023-12-01'
+      GROUP BY gender,
+               os) m ON d.gender=m.gender
+   and d.os=m.os
+   ORDER BY time) AS virtual_table
+GROUP BY toStartOfDay(toDateTime(time))
+ORDER BY "DAU/MAU" DESC
+LIMIT 1000;

@@ -1,0 +1,42 @@
+-- Запрос для анализа взаимодействия ленты новостей и сервиса сообщений
+
+SELECT user_id,
+          CASE
+              WHEN a.time = '1970-01-01' THEN b.time
+              ELSE a.time
+          END AS date,
+          b.massege as massege,
+          a.new as new,
+          like,
+          view,
+          msg,
+          CASE
+              WHEN new = 0
+                   AND a.gender = 0 THEN b.gender
+              ELSE a.gender
+          END AS gender,
+          multiIf(gender=1, 'male', 'female') AS gender_name,
+          CASE
+              WHEN a.os = '' THEN b.os
+              ELSE a.os
+          END AS os
+   FROM
+     (SELECT user_id,
+             MAX(gender) as gender,
+             MAX(os) as os,
+             COUNT(IF(action='view', 1, NULL)) AS view,
+             COUNT(IF(action='like', 1, NULL)) AS like,
+             toDate(time) as time,
+             1 as new
+      FROM simulator_20231220.feed_actions
+      GROUP BY user_id,
+               time)a
+   FULL JOIN
+     (SELECT user_id,
+             MAX(gender) as gender,
+             MAX(os) as os,
+             COUNT(receiver_id) AS msg,
+             toDate(time) as time,
+             1 as massege
+      FROM simulator_20231220.message_actions GROUP  BY user_id,
+                                                        time) b using user_id
