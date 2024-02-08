@@ -12,8 +12,8 @@ from airflow.operators.python import get_current_context
 import telegram
 import io
 
-my_token = '6987125723:AAHkmaR-s2aEC0jEiIXuIoi_MU-vWMbNDYM'
-chat_id = -938659451 
+my_token = 'my_token'
+chat_id = -1111 
 bot = telegram.Bot(token=my_token)
 
 # Функция приведения даты в строковый формат
